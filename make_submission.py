@@ -46,23 +46,35 @@ X_test = pd.get_dummies(test_df[predictor_columns])
 
 
 # Use cross validation grid search to find good parameters
-# parameters_list = {'max_depth': [3, 5, 7, 9], 'n_estimators': [50, 100, 150, 200], 'gamma': [0.1, 1, 10, 100, 1000]}
-parameters_list = {'max_depth': [3], 'n_estimators': [50], 'gamma': [1]}
+parameters_list = {'max_depth': [3, 5, 7, 9], 'n_estimators': [50, 100, 150, 200], 'gamma': [0.1, 1, 10, 100, 1000]}
+# parameters_list = {'max_depth': [3], 'n_estimators': [50], 'gamma': [1]}
+train_m_ind = X_train['Sex_male'] == 1
+train_f_ind = X_train['Sex_female'] == 1
 
-clf = GridSearchCV(XGBClassifier(), parameters_list)
+clf_m = GridSearchCV(XGBClassifier(), parameters_list)
+clf_f = GridSearchCV(XGBClassifier(), parameters_list)
 
-#clf = LogisticRegression()
+clf_m.fit(X_train[train_m_ind], y_train[train_m_ind])
+clf_f.fit(X_train[train_f_ind], y_train[train_f_ind])
 
-clf.fit(X_train, y_train)
+train_preds_m = clf_m.predict(X_train[train_m_ind])
+train_preds_f = clf_f.predict(X_train[train_f_ind])
 
-training_predictions = clf.predict(X_train)
-testing_predictions = clf.predict(X_test)
+train_acc_m = accuracy_score(y_train[train_m_ind], train_preds_m)
+train_acc_f = accuracy_score(y_train[train_f_ind], train_preds_f)
 
-training_accuracy = accuracy_score(y_train, training_predictions)
+print(train_acc_m)
+print(train_acc_f)
 
-print(training_accuracy)
+test_m_ind = X_test['Sex_male'] == 1
+test_f_ind = X_test['Sex_female'] == 1
 
-test_df['Survived'] = testing_predictions
+test_preds_m = clf_m.predict(X_test[test_m_ind])
+test_preds_f = clf_f.predict(X_test[test_f_ind])
+
+test_df.loc[test_m_ind, 'Survived'] = test_preds_m
+test_df.loc[test_f_ind, 'Survived'] = test_preds_f
+test_df.loc[:, 'Survived'] = test_df['Survived'].astype('int')
+
 test_df[['PassengerId', 'Survived']].to_csv('predictions', index=False)
-
-
+  

@@ -44,7 +44,7 @@ from sklearn.svm import SVC
 
 # Use cross validation grid search to find good parameters
 parameters_list = [{'kernel': ['rbf'], 'gamma': [0.1, 1, 10, 100], 'C': [1e-2, 1e-1, 1, 10, 100, 1e3]},
-{'kernel': ['linear'], 'C': [1e-2, 1e-1, 1, 10, 100, 1e3]}]
+{'kernel': ['linear', 'polynomial'], 'C': [1e-2, 1e-1, 1, 10, 100, 1e3]}]
 
 clf = GridSearchCV(SVC(), parameters_list)
 clf.fit(X_train, y_train)

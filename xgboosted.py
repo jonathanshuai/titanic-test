@@ -44,16 +44,24 @@ from xgboost import XGBClassifier
 # Use cross validation grid search to find good parameters
 parameters_list = {'max_depth': [3, 5, 7, 9], 'n_estimators': [50, 100, 150, 200], 'gamma': [0.1, 1, 10, 100, 1000]}
 
-clf = GridSearchCV(XGBClassifier(), parameters_list)
-clf.fit(X_train, y_train)
+train_m_ind = X_train['Sex_male'] == 1
+train_f_ind = X_train['Sex_female'] == 1
 
-females = X_test['Sex_female'] == 1
-males = X_test['Sex_male'] == 1
-female_predictions = clf.predict(X_test[females])
-male_predictions = clf.predict(X_test[males])
+clf_m = GridSearchCV(XGBClassifier(), parameters_list)
+clf_f = GridSearchCV(XGBClassifier(), parameters_list)
 
-female_accuracy = accuracy_score(female_predictions, y_test[females])
-male_accuracy = accuracy_score(male_predictions, y_test[males])
-print(female_accuracy)
+clf_m.fit(X_train[train_m_ind], y_train[train_m_ind])
+clf_f.fit(X_train[train_f_ind], y_train[train_f_ind])
+
+
+test_m_ind = X_test['Sex_male'] == 1
+test_f_ind = X_test['Sex_female'] == 1
+
+male_predictions = clf_m.predict(X_test[test_m_ind])
+female_predictions = clf_f.predict(X_test[test_f_ind])
+
+male_accuracy = accuracy_score(male_predictions, y_test[test_m_ind])
+female_accuracy = accuracy_score(female_predictions, y_test[test_f_ind])
+
 print(male_accuracy)
-
+print(female_accuracy)
